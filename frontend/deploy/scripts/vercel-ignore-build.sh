@@ -11,29 +11,18 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 1
 PREVIOUS_SHA="${VERCEL_GIT_PREVIOUS_SHA:-}"
 CURRENT_SHA="${VERCEL_GIT_COMMIT_SHA:-HEAD}"
 
-echo "========== VERCEL IGNORE DEBUG =========="
-echo "PWD: $(pwd)"
-echo "REPO_ROOT: ${REPO_ROOT:-EMPTY}"
-echo "CURRENT_SHA: ${CURRENT_SHA:-EMPTY}"
-echo "PREVIOUS_SHA: ${PREVIOUS_SHA:-EMPTY}"
-echo "SHALLOW: $(git rev-parse --is-shallow-repository 2>&1)"
-echo "========================================="
-
 if [[ -z "$PREVIOUS_SHA" ]]; then
   exit 1
 fi
 
-git cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null || exit 1
-git cat-file -e "${CURRENT_SHA}^{commit}" 2>/dev/null || exit 1
-
-echo "========== COMMIT VALIDATION ============"
-git cat-file -t "$PREVIOUS_SHA" 2>&1 || true
-git cat-file -t "$CURRENT_SHA" 2>&1 || true
-echo "========================================="
+git -C "$REPO_ROOT" cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null || exit 1
+git -C "$REPO_ROOT" cat-file -e "${CURRENT_SHA}^{commit}" 2>/dev/null || exit 1
 
 CHANGED_FILES="$(mktemp)"
 trap 'rm -f "$CHANGED_FILES"' EXIT
 
+# Use NUL separators to safely handle filenames containing spaces
+# or special characters.
 git -C "$REPO_ROOT" diff \
   --no-renames \
   --name-only \
@@ -42,23 +31,15 @@ git -C "$REPO_ROOT" diff \
   "$CURRENT_SHA" \
   -- > "$CHANGED_FILES" || exit 1
 
-echo "========== CHANGED FILES ================"
-git -C "$REPO_ROOT" diff \
-  --no-renames \
-  --name-status \
-  "$PREVIOUS_SHA" \
-  "$CURRENT_SHA" || true
-
-echo "========================================="
-
 has_relevant_changes=false
 
-while IFS= read -r -d '' file; do
+# Bash 3.2 compatible: read NUL-separated paths byte by byte.
+while IFS= read -r -d "$(printf '\0')" file; do
   # Only frontend changes can trigger this deployment.
   [[ "$file" == frontend/* ]] || continue
 
   relative_path="${file#frontend/}"
-  lower_path="${relative_path,,}"
+  lower_path="$(printf '%s' "$relative_path" | tr '[:upper:]' '[:lower:]')"
   filename="${lower_path##*/}"
 
   # Documentation files.
@@ -70,7 +51,10 @@ while IFS= read -r -d '' file; do
 
   # Documentation and AI-related directories.
   case "/$lower_path/" in
-    */docs/*|*/documentation/*|*/.github/*|*/.cursor/*|*/.claude/*|*/.codex/*|*/.windsurf/*|*/.opencode/*|*/.aider/*|*/agents/*|*/prompts/*|*/ai/*|*/.ai/*)
+    */docs/*|*/documentation/*|\
+    */.cursor/*|*/.claude/*|*/.codex/*|\
+    */.windsurf/*|*/.opencode/*|*/.aider/*|\
+    */agents/*|*/prompts/*|*/ai/*|*/.ai/*)
       continue
       ;;
   esac
@@ -83,28 +67,10 @@ while IFS= read -r -d '' file; do
       ;;
   esac
 
-  # Relevant source code, configuration, dependencies and assets.
-  case "$filename" in
-    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.mts|*.cts|\
-    *.json|*.jsonc|*.yaml|*.yml|*.toml|*.lock|\
-    *.css|*.scss|*.sass|*.less|*.html|*.svg|\
-    *.sh|*.bash|*.py|*.tsbuildinfo|\
-    *.png|*.jpg|*.jpeg|*.webp|*.avif|*.gif|*.ico|\
-    *.woff|*.woff2|*.ttf|*.otf)
-      has_relevant_changes=true
-      break
-      ;;
-  esac
+  # Fail-safe: any other frontend file is relevant.
+  has_relevant_changes=true
+  break
 
-  # Important extensionless or special configuration files.
-  case "$filename" in
-    dockerfile|.dockerignore|.npmrc|.nvmrc|.node-version|\
-    makefile|procfile|nginx.conf|\
-    .env|.env.*|.browserslistrc)
-      has_relevant_changes=true
-      break
-      ;;
-  esac
 done < "$CHANGED_FILES"
 
 if [[ "$has_relevant_changes" == true ]]; then
