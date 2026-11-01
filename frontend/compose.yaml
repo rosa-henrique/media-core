@@ -1,0 +1,81 @@
+name: media-core
+
+services:
+  web:
+    image: media-core-web:local
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    expose:
+      - "3000"
+    restart: unless-stopped
+    networks:
+      - frontend-network
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/web').then(r => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  admin:
+    image: media-core-admin:local
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    expose:
+      - "3001"
+    restart: unless-stopped
+    networks:
+      - frontend-network
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3001/admin').then(r => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  proxy:
+    image: media-core-proxy:local
+    build:
+      context: .
+      dockerfile: apps/proxy/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      PORT: "3002"
+      HOSTNAME: "0.0.0.0"
+      PROXY_PUBLIC_ORIGIN: ${PROXY_PUBLIC_ORIGIN}
+      WEB_ORIGIN: ${WEB_ORIGIN}
+      ADMIN_ORIGIN: ${ADMIN_ORIGIN}
+    depends_on:
+      web:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - frontend-network
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3002').then(r => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  frontend-network:
+    driver: bridge

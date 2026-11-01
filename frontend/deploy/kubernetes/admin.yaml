@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin
+  template:
+    metadata:
+      labels:
+        app: admin
+    spec:
+      containers:
+        - name: admin
+          #image: YOUR_REGISTRY/media-core-web:VERSION
+          image: media-core-admin:local
+          imagePullPolicy: Never # remover se tiver ali no YOUR_REGISTRY - Never determina que o Kubernetes use a imagem local, sem tentar baixá-la.
+          ports:
+            - name: http
+              containerPort: 3001
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3001"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+          readinessProbe:
+            httpGet:
+              path: /admin
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /admin
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin
+spec:
+  type: ClusterIP
+  selector:
+    app: admin
+  ports:
+    - name: http
+      port: 3001
+      targetPort: http

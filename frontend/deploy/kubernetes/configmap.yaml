@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: media-core-proxy-config
+data:
+  PROXY_PUBLIC_ORIGIN: "http://localhost:30082"
+  WEB_ORIGIN: "http://web.default.svc.cluster.local:3000"
+  ADMIN_ORIGIN: "http://admin.default.svc.cluster.local:3001"

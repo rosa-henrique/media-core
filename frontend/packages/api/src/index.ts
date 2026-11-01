@@ -1,0 +1,1 @@
+export { getApiStatus } from "./example";
