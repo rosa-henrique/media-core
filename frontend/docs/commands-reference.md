@@ -33,14 +33,25 @@ Execução isolada com `docker run`: [docker.md](docker.md#executar-cada-aplica�
 
 ## Scripts do monorepo (raiz)
 
-| Comando             | Executa               | Estado                                       |
-| ------------------- | --------------------- | -------------------------------------------- |
-| `pnpm dev`          | `turbo run dev`       | [Testado] (web 3000, admin 3001, proxy 3002) |
-| `pnpm build`        | `turbo run build`     | [Testado] (3 tarefas; ~6 s)                  |
-| `pnpm lint`         | `turbo run lint`      | [Testado] (5 tarefas)                        |
-| `pnpm typecheck`    | `turbo run typecheck` | [Testado] (5 tarefas)                        |
-| `pnpm format:check` | `prettier . --check`  | [Testado] (acusou 2 arquivos de insumo)      |
-| `pnpm format`       | `prettier . --write`  | [Arquivo] — reescreve arquivos               |
+| Comando             | Executa                                              | Estado |
+| ------------------- | ---------------------------------------------------- | ------ |
+| `pnpm dev`          | `turbo run dev`                                      | [Testado] (web 3000, admin 3001, proxy 3002) |
+| `pnpm build`        | `turbo run build`, incluindo a dependência global de qualidade | [Arquivo] (a execução após inclusão do Quality Gate ainda não foi revalidada) |
+| `pnpm lint`         | `turbo run lint`                                     | [Testado] (5 tarefas) |
+| `pnpm typecheck`    | `turbo run typecheck`                                | [Testado] (5 tarefas) |
+| `pnpm quality:check`| ESLint em `.` seguido de Prettier `--check` em `.`   | [Arquivo] (execução não revalidada nesta atualização) |
+| `pnpm format:check` | `prettier . --check`                                 | [Testado] historicamente; Markdown agora é excluído pelo `.prettierignore` |
+| `pnpm format`       | `prettier . --write`                                 | [Arquivo] — reescreve arquivos; não usar como validação do build |
+
+`quality:check` é um script do `package.json` raiz: `pnpm exec eslint . && pnpm exec prettier . --check`. O segundo comando é somente verificação e não altera arquivos. `.prettierignore` exclui `**/*.md`, além de artefatos e lockfile listados; portanto Markdown não é coberto por essa etapa do Prettier.
+
+Em `turbo.json`, `//#quality:check` identifica a tarefa no package raiz. `cache: false` evita reutilizar um resultado anterior e executa a verificação em cada pipeline; `build.dependsOn` declara a validação como dependência das tarefas de build. Se ESLint ou Prettier falhar, a tarefa de qualidade falha e os builds que dependem dela não prosseguem.
+
+### Fluxo recomendado para build
+
+- Build de todo o monorepo: `pnpm build` (equivalente a `pnpm turbo run build`).
+- Build direcionado, mantendo o pipeline do Turbo e a validação global: `pnpm turbo run build --filter=web...`.
+- Rodar `pnpm build` dentro de `apps/web` ou `apps/admin`, `pnpm --filter <app> build` diretamente, ou `next build` invoca o build da app sem necessariamente passar pela tarefa global `//#quality:check`. Para garantir o Quality Gate, use o build orquestrado pelo Turbo.
 
 ## Por projeto
 

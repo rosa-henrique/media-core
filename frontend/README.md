@@ -51,6 +51,8 @@ pnpm dev                       # web :3000, admin :3001, proxy :3002
 curl -I http://localhost:3002/web      # via proxy
 ```
 
+Para build do monorepo com o Quality Gate global, use `pnpm build`; o fluxo e alternativas direcionadas estão em [docs/commands-reference.md](docs/commands-reference.md#scripts-do-monorepo-raiz).
+
 Ou, com contêineres:
 
 ```bash
@@ -72,7 +74,7 @@ docker compose down
 | [docs/docker-compose.md](docs/docker-compose.md)               | Ambiente completo, operação por serviço, testes do proxy                                     |
 | [docs/vercel.md](docs/vercel.md)                               | Deploy do frontend com Vercel Services, configurações e alternativas arquiteturais             |
 | [docs/proxy.md](docs/proxy.md)                                 | Regras do proxy, erros, redirects, rotas de teste                                            |
-| [docs/commands-reference.md](docs/commands-reference.md)       | Referência rápida e matriz monorepo × cada app, com estado de validação                      |
+| [docs/commands-reference.md](docs/commands-reference.md)       | Comandos do monorepo/apps, Quality Gate e estado de validação                                |
 | [docs/file-map.md](docs/file-map.md)                           | Para que serve cada arquivo de configuração                                                  |
 | [docs/decisions.md](docs/decisions.md)                         | Decisões com estado, evidência e motivo                                                      |
 | [docs/troubleshooting.md](docs/troubleshooting.md)             | Sintomas, causas e verificações                                                              |
@@ -85,6 +87,6 @@ docker compose down
 - **[Testado antes da renomeação]** `pnpm install --frozen-lockfile`, `typecheck`, `lint`, `build`, `pnpm dev` (tudo e cada app), imagens Docker, `docker run` isolado e Docker Compose (incluindo parar o `web`, recuperar e timeout 504 do proxy). Os novos nomes de imagem e de projeto Compose ainda não foram testados.
 - **Achados registrados** (detalhes e limitações em [docs/status-and-next-steps.md](docs/status-and-next-steps.md#achados-registrados)): o Lerna foi descartado por decisão oficial; `proxy-redirect-test` não exercita a reescrita de `Location` em Docker/Compose; o `.env` da raiz só serve ao Compose; sobras do scaffold em `web`/`admin`; `@frontend/ui` incompleto; existem páginas `proxy-test` além das 4 rotas de teste.
 - **Deploy Vercel:** o histórico informado para esta etapa registra os três serviços ativos em Vercel Services; detalhes e limites de validação em [docs/vercel.md](docs/vercel.md). **[Relato]**
+- **Quality Gate:** builds invocados pelo Turbo dependem da verificação global de ESLint e Prettier; comandos e limites da integração Vercel pendente em [docs/commands-reference.md](docs/commands-reference.md) e [docs/vercel.md](docs/vercel.md).
 - **Docker:** as imagens executam o `server.js` do standalone; as apps não têm script `start`. Docker continua documentado como forma de execução própria em [docs/docker.md](docs/docker.md), não como único destino de produção.
-- **[Arquivo]** O repositório git ainda não tem commits; todos os arquivos aparecem como não rastreados.
 - **[Pendente]** Deploy do backend; autenticação/autorização (não implementadas); destino das rotas de teste; Kubernetes (etapa posterior).

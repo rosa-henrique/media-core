@@ -9,6 +9,7 @@ Legenda das marcas: [README](../README.md#legenda-de-evidências). Validações 
 | Instalação           | `pnpm install --frozen-lockfile` com lockfile atualizado; 6 projetos no workspace; `nvm use` → Node 26.12.1                                                                      | [Testado]   |
 | Qualidade estática   | `pnpm typecheck` e `pnpm lint` passam (5/5 tarefas); `--filter` por app e por pacote                                                                                             | [Testado]   |
 | Build                | `pnpm build` gera web, admin e proxy                                                                                                                                             | [Testado]   |
+| Quality Gate         | `quality:check` executa ESLint e Prettier `--check`; `//#quality:check` está sem cache e é dependência de `build` no Turbo. Execução e bloqueio de falhas após a mudança não foram revalidados nesta tarefa. | [Arquivo] / [A testar] |
 | Dev local            | `pnpm dev` (tudo) e `pnpm --filter web\|admin\|proxy dev` (cada um isolado); `/`, `/web`, `/admin` → 200; `@frontend/api` renderizado em `/web`                                  | [Testado]   |
 | Execução via Docker  | Imagens usam standalone (`node apps/<app>/server.js`); as apps não têm script `start`. O deploy Vercel é registrado separadamente abaixo.                                         | [Testado]   |
 | Proxy                | Repasse de status e corpo; 500 repassado; redirect externo preservado; reescrita de `Location` interno (em dev); 502 e recuperação; 504 por timeout; 404 fora de `/web`/`/admin` | [Testado]   |
@@ -16,11 +17,12 @@ Legenda das marcas: [README](../README.md#legenda-de-evidências). Validações 
 | `docker run` isolado | Os fluxos foram testados com as tags e nomes anteriores; os exemplos atualizados para Media Core ainda não foram reexecutados                                                        | [Histórico] |
 | Docker Compose       | O fluxo foi testado antes da renomeação; `compose.yaml` agora define o projeto `media-core` e usa novas tags, ainda sem reexecução de validação                                        | [Histórico] |
 | Histórico anterior   | Imagens e Compose já haviam sido testados, incluindo proxy com `web` parado e recuperação                                                                                        | [Histórico] |
-| Deploy Vercel        | Foi informado que a instalação congelada e os builds de Web, Admin e Proxy passaram e que o deploy por Vercel Services está funcionando 100%. Não reexecutado nem inspecionado nesta tarefa. | [Relato] |
+| Deploy Vercel        | Foi informado que a instalação congelada e os builds de Web, Admin e Proxy passaram e que o deploy por Vercel Services está funcionando 100%. A execução do Quality Gate pelo build Vercel ainda não foi confirmada. | [Relato] / [Pendente] |
 
 ## O que **não** foi testado ou validado
 
 - `pnpm format` e `pnpm exec eslint . --fix` (reescrevem arquivos), `cp .env.example .env` (não sobrescrevi o `.env` existente) e `nvm install 26.12.1`.
+- Execução de `pnpm quality:check`, a ordem/falha do Quality Gate no pipeline do Turbo após a alteração recente e integração desse pipeline nos builds Vercel de `web`, `admin` e `proxy`.
 - `docker build --no-cache`, `docker compose down --rmi local` e remoção de imagens (destrutivos para o cache/imagens).
 - `pnpm --filter <app> build` individual (só `pnpm build` via Turborepo foi executado) e `docker compose up -d --build admin|proxy` isolados (só `web`).
 - Timeout 504 **dentro** do Compose (testado com `pnpm --filter proxy dev`); WebSocket/HMR através do proxy; recarga automática (hot reload) ao editar um pacote compartilhado.
@@ -53,17 +55,19 @@ As imagens Docker usam standalone; as apps não têm script `start` para executa
 ## Pendências e decisões em aberto
 
 1. **Autenticação/autorização** — não decidida; nada implementado.
-2. **Biblioteca de UI** — faltam usar `tokens.shadows`, layouts e componentes MUI (hoje `AppButton` é um `<button>` simples); `@frontend/api` tem só uma função de exemplo.
+2. **Biblioteca de UI** — existe um padrão centralizado de exportação de componentes; ainda faltam usar `tokens.shadows`, layouts e componentes MUI (hoje `AppButton` é um `<button>` simples); `@frontend/api` tem só uma função de exemplo.
 3. **Rotas de teste do proxy** — preservadas; destino futuro não decidido.
 4. **Sobras do scaffold** em `apps/web` e `apps/admin` (`pnpm-lock.yaml`, README, AGENTS) — decidir.
 5. **Páginas iniciais** de `web` e `admin` ainda são o template do `create-next-app`.
-6. **Git** — o repositório não tem commits; não há histórico versionado.
-7. **Formatação** — `context/project-context.md` e `prompts/documentation-agent.md` fora do padrão do Prettier.
-8. **Kubernetes** — adiado para uma etapa posterior (acesso externo e automação). Não documentado nesta etapa.
+6. **Formatação** — `context/project-context.md` e `prompts/documentation-agent.md` fora do padrão do Prettier.
+7. **Kubernetes** — adiado para uma etapa posterior (acesso externo e automação). Não documentado nesta etapa.
+8. **Quality Gate na Vercel** — descobrir/configurar e validar o comando de build e seu contexto para os três Services; ainda não afirmar que Vercel executa `quality:check`.
+9. **AWS Amplify** — integração futura: quando adotada, o objetivo é usar o pipeline do monorepo com `quality:check` antes dos builds; ainda não há configuração no repositório.
 
 ## Próximas etapas sugeridas
 
 1. Resolver as pendências 1, 2 e 4 acima conforme a prioridade do projeto.
-2. Fazer o primeiro commit para versionar a base (e esta documentação).
-3. Revisar a configuração de build por serviço no Dashboard Vercel quando ela precisar ser alterada (não está versionada nos arquivos).
-4. Em etapa posterior e separada: Kubernetes — documentação da configuração e acesso externo e, depois, automação de implantação.
+2. Executar `pnpm quality:check` e validar que `pnpm build` e build direcionado pelo Turbo executam o Quality Gate e bloqueiam os builds dependentes em caso de falha.
+3. Validar o comando/contexto de build da Vercel para `web`, `admin` e `proxy`, garantindo o Quality Gate sem presumir uma configuração não testada.
+4. Quando houver decisão de integrar Amplify, configurar e validar seu uso do pipeline Turbo; documentar a configuração então.
+5. Em etapa posterior e separada: Kubernetes — documentação da configuração e acesso externo e, depois, automação de implantação.

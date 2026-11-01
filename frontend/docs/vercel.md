@@ -140,6 +140,14 @@ allowBuilds:
 
 Essa consolidação é relevante para que pnpm e as aplicações usem o workspace e lockfile únicos. O Vercel Services constrói cada serviço separadamente; no workspace local, o script raiz delega a orquestração do build ao Turborepo. Os arquivos não registram o comando de build personalizado, se houver, no Dashboard. Portanto, não se presume aqui que cada serviço invoque `pnpm build` na raiz: confirme esse campo no Dashboard antes de alterá-lo.
 
+### Quality Gate global nos builds da Vercel — validação pendente
+
+O objetivo é fazer com que os builds Vercel de `web`, `admin` e `proxy` passem pela tarefa global `quality:check` do workspace, antes de executar os builds. A configuração atual declara três Services com roots próprios e bindings no Proxy, mas não confirma em qual diretório cada comando de build é executado nem que a tarefa global do Turbo seja chamada.
+
+Por isso, ainda é necessário configurar e testar o comando de build e seu contexto de execução em cada um dos três Services. Não se documenta aqui um `buildCommand` ou outra configuração presumida: a integração só deve ser marcada como concluída após verificar que ESLint/Prettier são executados para todos os serviços e que uma falha impede os builds dependentes. O `ignoreCommand` descrito acima é um controle de skip de deployments; não comprova que o build execute o Quality Gate.
+
+O script, a dependência global do Turbo, os comandos locais recomendados e os detalhes da pendência estão em [commands-reference.md](commands-reference.md#scripts-do-monorepo-raiz) e [status-and-next-steps.md](status-and-next-steps.md).
+
 ## Proxy, origens e redirects
 
 O Proxy usa `WEB_ORIGIN` e `ADMIN_ORIGIN` para selecionar a aplicação de destino. Na Vercel, essas variáveis vêm dos Service Bindings. Fora desse ambiente, o código mantém os padrões locais `http://localhost:3000` e `http://localhost:3001`.

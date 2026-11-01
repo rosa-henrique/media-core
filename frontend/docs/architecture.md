@@ -49,7 +49,7 @@ O `pnpm-workspace.yaml` declara `apps/*` e `packages/*` como projetos do workspa
 
 | Pacote          | Export público **[Arquivo]** | Conteúdo                                                                                                                                                                                                                                                    |
 | --------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@frontend/ui`  | `AppButton`, `ThemeRegistry` | `ThemeRegistry` (`"use client"`: `AppRouterCacheProvider` + `ThemeProvider` + `CssBaseline`), `theme` (usa `palette`, `typography` e `tokens.spacing`/`tokens.radius`), `tokens` (exportado), `AppButton` (`<button>` simples, com o tipo `AppButtonProps`) |
+| `@frontend/ui`  | `AppButton`, `AppButtonProps`, `ThemeRegistry`, `tokens` | `AppButton` (`<button>` simples) e seu tipo; `ThemeRegistry` (`"use client"`: `AppRouterCacheProvider` + `ThemeProvider` + `CssBaseline`), tema e tokens. O padrão de organização e exportação está detalhado abaixo. |
 | `@frontend/api` | `getApiStatus`               | Função de exemplo que retorna `"API package connected"`                                                                                                                                                                                                     |
 
 Como são consumidos:
@@ -57,8 +57,10 @@ Como são consumidos:
 - Nas apps, a dependência é `"@frontend/ui": "workspace:*"` (idem `api`) em `package.json`: o pnpm cria um link simbólico para a pasta do pacote. **[Arquivo]**
 - Os pacotes **não têm etapa de build**: `package.json` aponta `types` e `exports` para arquivos de `src` (TypeScript puro). **[Arquivo]**
 - Por isso as apps listam `transpilePackages`: o Next.js compila o TypeScript dos pacotes junto com a app. **[Inferência]** sobre o motivo (o efeito de `transpilePackages` é padrão do Next.js; a motivação do projeto não foi confirmada).
-- `exports` define estes formatos de import, todos **[Testado]** (TypeScript, `next build` e dev): `@frontend/ui` (componentes, tipos, `ThemeRegistry`, `tokens`), `@frontend/ui/theme` (`ThemeRegistry`, `tokens`), `@frontend/ui/theme/<arquivo>` (ex.: `@frontend/ui/theme/tokens`, `@frontend/ui/theme/theme`; só arquivos `.ts`) e `@frontend/ui/<Componente>` (ex.: `@frontend/ui/AppButton`, resolvido para `src/components/<Componente>/index.tsx`). `@frontend/ui/src/...` não resolve. Os alvos de `exports` precisam ter extensão/arquivo explícito: sem isso o bundler resolve, mas o TypeScript não (`TS2307`). **[Arquivo]**
-- Exemplo real: `import { AppButton } from "@frontend/ui";` em `apps/web/src/app/ButtonTest.tsx`. **[Arquivo]**
+- A entrada pública `packages/ui/src/index.ts` reexporta `components` e `theme`; `components/index.ts` centraliza os componentes nomeados. Cada componente fica em seu diretório: `AppButton/AppButton.tsx` tem o `export default`; `AppButton/index.tsx` reexporta esse default e os tipos nomeados de `AppButton.types.ts`. **[Arquivo]**
+- O padrão adotado é importar componentes pelo pacote, por exemplo `import { AppButton } from "@frontend/ui";` em `apps/web/src/app/ButtonTest.tsx`, em vez de acoplar consumidores a caminhos internos. O barrel público centraliza a API, mantém imports consistentes e permite evoluir a implementação sem exigir mudanças nos consumidores. **[Arquivo]**
+- `packages/ui/package.json` também declara subpaths públicos (`./theme`, `./theme/*`, `./*`); o padrão recomendado para componentes compartilhados continua sendo o barrel `@frontend/ui`. Imports de arquivos internos como `@frontend/ui/src/...` não são expostos por `exports`. **[Arquivo]**
+- Os exports e componentes atuais são TypeScript em `src`; não há etapa de build própria do pacote. A organização real pode ser consultada em [file-map.md](file-map.md#pacotes). **[Arquivo]**
 - Os scripts dos pacotes são apenas `lint` e `typecheck`; não há `dev` nem `build` neles. **[Arquivo]**
 
 ## Dependências entre projetos
@@ -74,7 +76,8 @@ flowchart TD
 ```
 
 - `proxy` não importa código de `web`/`admin`; fala com elas por HTTP, usando `WEB_ORIGIN` e `ADMIN_ORIGIN`. **[Arquivo]**
-- Em `turbo.json`, `build`, `lint` e `typecheck` têm `dependsOn: ["^..."]`, ou seja, uma tarefa de uma app roda antes as tarefas das suas dependências de workspace. **[Arquivo]** Efeito observado: `turbo run lint --filter=admin` executou 3 tarefas (admin, `@frontend/api`, `@frontend/ui`). **[Testado]**
+- Em `turbo.json`, `build`, `lint` e `typecheck` dependem das tarefas correspondentes dos pacotes do workspace. `build` também depende da tarefa global `//#quality:check`, que verifica ESLint e Prettier antes dos builds dependentes. A configuração existe nos arquivos; consulte [commands-reference.md](commands-reference.md#scripts-do-monorepo-raiz) para os comandos e [vercel.md](vercel.md) para a integração Vercel ainda pendente de validação. **[Arquivo]**
+- Efeito observado anteriormente: `turbo run lint --filter=admin` executou 3 tarefas (admin, `@frontend/api`, `@frontend/ui`). **[Testado]**
 
 ## Fluxo de uma requisição pelo proxy
 

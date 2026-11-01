@@ -103,8 +103,8 @@ Lint e formatação **[Arquivo]**: ESLint 9 (flat config) com regras de `configs
 ## Trabalhar em uma biblioteca compartilhada
 
 1. Edite `packages/ui/src` ou `packages/api/src`.
-2. Exponha o que for público pelos pontos definidos em `exports` (`src/index.ts`, `src/theme/index.ts`, `components/<Nome>/index.tsx`). **[Arquivo]** Sem isso, a app não consegue importar. Formatos válidos: `@frontend/ui`, `@frontend/ui/theme`, `@frontend/ui/theme/tokens` e `@frontend/ui/AppButton`. **[Testado]**
-3. Importe na app pelo nome do pacote: `import { AppButton } from "@frontend/ui";`.
+2. Exponha o que for público pelos pontos definidos em `exports` (`src/index.ts`, `src/theme/index.ts`, `components/<Nome>/index.tsx`). **[Arquivo]** Para componentes compartilhados, use o barrel público do pacote; os subpaths de tema (`@frontend/ui/theme`, `@frontend/ui/theme/tokens`) também estão explicitamente expostos. **[Testado]**
+3. Importe componentes na app pelo barrel do pacote: `import { AppButton } from "@frontend/ui";`.
 4. Não é necessário build da biblioteca: com `pnpm dev` rodando, a app compila o TypeScript do pacote (`transpilePackages`). **[Arquivo]** A reflexão imediata das mudanças no navegador (hot reload) **[A testar]**.
 5. Valide o pacote e quem o consome:
 

@@ -1,2 +1,2 @@
-export type { AppButtonProps } from "./AppButton";
-export { AppButton } from "./AppButton";
+export { default as AppButton } from "./AppButton";
+export * from "./AppButton";
