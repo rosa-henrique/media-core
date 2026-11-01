@@ -38,9 +38,9 @@ Equivalente: `cd apps/web && pnpm dev`. **[A testar]** (o script `dev` existe em
 
 Para testar o proxy com as duas apps, suba as três (o proxy não inicia as outras). Com `web` ou `admin` isolados, o acesso direto funciona (`/web` → 200 em `:3000`; `/admin` → 200 em `:3001`). **[Testado]**
 
-### Produção: somente pelas imagens Docker
+### Execução de produção via Docker
 
-**Decisão:** a produção é executada **exclusivamente** pelas imagens Docker, que rodam o `server.js` gerado por `output: "standalone"` (`node apps/<app>/server.js`). As apps **não têm** script `start`, e **não há suporte** a iniciar a produção localmente com `pnpm start` ou `next start`. Para um ambiente local equivalente à produção, use `docker compose up -d --build` ([docker-compose.md](docker-compose.md)) ou as imagens individuais ([docker.md](docker.md)). Registro em [decisions.md](decisions.md) (decisão nº 15).
+Para executar as imagens Docker, use o `server.js` gerado por `output: "standalone"` (`node apps/<app>/server.js`). As apps **não têm** script `start`, e **não há suporte** a iniciar esse modo localmente com `pnpm start` ou `next start`. Para um ambiente local equivalente às imagens, use `docker compose up -d --build` ([docker-compose.md](docker-compose.md)) ou as imagens individuais ([docker.md](docker.md)). O frontend também tem deploy na Vercel, descrito em [vercel.md](vercel.md); a ausência do script `start` não é uma instrução de deploy Vercel.
 
 Fluxo local:
 
@@ -49,7 +49,7 @@ pnpm dev        # desenvolvimento: next dev (todas as apps) — [Testado]
 pnpm build      # build: next build (gera apps/*/.next, incluindo .next/standalone) — [Testado]
 ```
 
-O `.next/standalone` gerado no host **não** é o artefato de produção: o `server.js` dele embute caminhos absolutos da máquina e não inclui `.next/static` nem `public`, que o Dockerfile copia à parte. **[Testado]** A imagem constrói e monta tudo por conta própria (`pnpm --filter <app> build` dentro do Dockerfile). **[Arquivo]**
+O `.next/standalone` gerado no host **não** basta para montar a imagem Docker: o `server.js` dele embute caminhos absolutos da máquina e não inclui `.next/static` nem `public`, que o Dockerfile copia à parte. **[Testado]** A imagem constrói e monta tudo por conta própria (`pnpm --filter <app> build` dentro do Dockerfile). **[Arquivo]**
 
 ## Comandos disponíveis
 

@@ -95,6 +95,10 @@ sequenceDiagram
 3. A resposta volta ao navegador com ajustes descritos em [proxy.md](proxy.md).
 4. Qualquer outro caminho (`/foo`) não é encaminhado: responde 404 do próprio proxy. **[Testado]**
 
+## Deploy na Vercel
+
+O frontend é implantado como três Vercel Services no mesmo projeto: o rewrite público encaminha todas as requisições ao Proxy, que chama Web e Admin por bindings. Configuração, instalação, builds, settings informados no Dashboard e a alternativa de projetos separados estão em [vercel.md](vercel.md).
+
 ## Papel de cada configuração do Next.js
 
 | Configuração                            | Onde                    | O que faz / observado                                                                                                                                                                             |
@@ -112,5 +116,5 @@ Não há autenticação nem autorização implementadas **[Arquivo]**. Os coment
 
 ## Observações sobre a base atual **[Arquivo] / [Testado]**
 
-- `apps/web` e `apps/admin` contêm `pnpm-lock.yaml` e `pnpm-workspace.yaml` próprios (vindos do scaffold). O `pnpm install` avisa que as configurações desses `pnpm-workspace.yaml` **não se aplicam** porque os projetos fazem parte do workspace raiz. **[Testado]** Não foram alterados; ver [decisions.md](decisions.md).
+- `apps/web` e `apps/admin` ainda contêm `pnpm-lock.yaml` próprios (vindos do scaffold), mas não têm `pnpm-workspace.yaml`; a configuração está consolidada no workspace raiz `frontend/`. **[Arquivo]** Ver [vercel.md](vercel.md).
 - `apps/web/README.md` e `apps/admin/README.md` são o texto padrão do `create-next-app`. `AGENTS.md` nas duas apps é gerado pelo Next.js e orienta a consultar `node_modules/next/dist/docs/`.

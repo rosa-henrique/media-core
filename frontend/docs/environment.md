@@ -25,6 +25,10 @@ Os três arquivos de ambiente têm exatamente as mesmas três variáveis. **[Tes
 
 Uma `/` final é removida pelo código. Não há variáveis com prefixo `NEXT_PUBLIC_`; as três são lidas no servidor, a cada requisição (`process.env` dentro das funções e rotas `force-dynamic`). **[Arquivo]**
 
+### Vercel
+
+Na implantação com Vercel Services, `WEB_ORIGIN` e `ADMIN_ORIGIN` são fornecidas ao Proxy pelos bindings declarados em [vercel.json](../vercel.json), não por valores fixos do `.env` local. `PROXY_PUBLIC_ORIGIN` continua opcional: se não estiver definido, o Proxy usa a origem da requisição recebida. Consulte [vercel.md](vercel.md) para a topologia, Dashboard e comportamento de redirects.
+
 ## Valores por ambiente (diferenças intencionais)
 
 | Variável              | Compose (`.env`, modelo em `.env.example`) | Desenvolvimento local (`apps/proxy/.env.local`) |

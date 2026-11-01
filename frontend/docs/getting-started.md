@@ -27,7 +27,7 @@ pnpm install --frozen-lockfile    # [Testado] não altera o lockfile; falha se e
 
 Se `pnpm` não existir: `npm install --global pnpm@12.15.0` (comando usado nos Dockerfiles). **[Arquivo]**
 
-Resultado esperado **[Testado]**: `Scope: all 6 workspace projects`, `Lockfile is up to date` e `Done in ...`. Também aparecem dois `[WARN]` dizendo que `apps/web/pnpm-workspace.yaml` e `apps/admin/pnpm-workspace.yaml` não se aplicam: é esperado no estado atual (ver [troubleshooting.md](troubleshooting.md)).
+Resultado esperado **[Testado]**: `Scope: all 6 workspace projects`, `Lockfile is up to date` e `Done in ...`. Não há `pnpm-workspace.yaml` próprios de `apps/web` e `apps/admin`; o workspace ativo é o de `frontend/`. O histórico dessas advertências está em [troubleshooting.md](troubleshooting.md). **[Arquivo]**
 
 Use `pnpm install` (sem `--frozen-lockfile`) apenas quando quiser alterar dependências. `pnpm-workspace.yaml` tem `allowBuilds: { unrs-resolver: true }`, liberando o script de instalação desse pacote. **[Arquivo]**
 

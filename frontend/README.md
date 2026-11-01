@@ -17,6 +17,7 @@ O Media Core é uma plataforma de gerenciamento e administração de conteúdos 
 | **[Intenção]**   | Decisão ou objetivo informado pelo usuário (não necessariamente implementado).          |
 | **[Inferência]** | Dedução a partir dos arquivos; o motivo ou o efeito não foi confirmado.                 |
 | **[Pendente]**   | Sem validação ou decisão.                                                               |
+| **[Relato]**     | Informação fornecida sobre estado ou execução, não revalidada nesta documentação.       |
 
 ## Visão geral
 
@@ -69,6 +70,7 @@ docker compose down
 | [docs/local-development.md](docs/local-development.md)         | Executar apps, trabalhar em bibliotecas, validar mudanças                                    |
 | [docs/docker.md](docs/docker.md)                               | Dockerfiles, build e execução de cada imagem isoladamente                                    |
 | [docs/docker-compose.md](docs/docker-compose.md)               | Ambiente completo, operação por serviço, testes do proxy                                     |
+| [docs/vercel.md](docs/vercel.md)                               | Deploy do frontend com Vercel Services, configurações e alternativas arquiteturais             |
 | [docs/proxy.md](docs/proxy.md)                                 | Regras do proxy, erros, redirects, rotas de teste                                            |
 | [docs/commands-reference.md](docs/commands-reference.md)       | Referência rápida e matriz monorepo × cada app, com estado de validação                      |
 | [docs/file-map.md](docs/file-map.md)                           | Para que serve cada arquivo de configuração                                                  |
@@ -82,6 +84,7 @@ docker compose down
 
 - **[Testado antes da renomeação]** `pnpm install --frozen-lockfile`, `typecheck`, `lint`, `build`, `pnpm dev` (tudo e cada app), imagens Docker, `docker run` isolado e Docker Compose (incluindo parar o `web`, recuperar e timeout 504 do proxy). Os novos nomes de imagem e de projeto Compose ainda não foram testados.
 - **Achados registrados** (detalhes e limitações em [docs/status-and-next-steps.md](docs/status-and-next-steps.md#achados-registrados)): o Lerna foi descartado por decisão oficial; `proxy-redirect-test` não exercita a reescrita de `Location` em Docker/Compose; o `.env` da raiz só serve ao Compose; sobras do scaffold em `web`/`admin`; `@frontend/ui` incompleto; existem páginas `proxy-test` além das 4 rotas de teste.
-- **Produção:** exclusivamente pelas imagens Docker, que executam o `server.js` do standalone. As apps não têm script `start` (sem suporte a `pnpm start`/`next start`); desenvolvimento é `next dev`, build é `next build` ([docs/decisions.md](docs/decisions.md), nº 15).
+- **Deploy Vercel:** o histórico informado para esta etapa registra os três serviços ativos em Vercel Services; detalhes e limites de validação em [docs/vercel.md](docs/vercel.md). **[Relato]**
+- **Docker:** as imagens executam o `server.js` do standalone; as apps não têm script `start`. Docker continua documentado como forma de execução própria em [docs/docker.md](docs/docker.md), não como único destino de produção.
 - **[Arquivo]** O repositório git ainda não tem commits; todos os arquivos aparecem como não rastreados.
-- **[Pendente]** Estratégia de deploy; autenticação/autorização (não implementadas); destino das rotas de teste; Kubernetes (etapa posterior).
+- **[Pendente]** Deploy do backend; autenticação/autorização (não implementadas); destino das rotas de teste; Kubernetes (etapa posterior).
