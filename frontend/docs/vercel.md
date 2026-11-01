@@ -42,6 +42,78 @@ Estado de configuração informado para o projeto. O repositório não contém u
 
 A documentação oficial descreve Root Directory e Framework Preset nas configurações de build do projeto. Com a integração Git, a Vercel pode criar Preview Deployments para pushes e deployments de produção para alterações na branch de produção; a branch exata do Media Core não pode ser confirmada nos arquivos.
 
+## Ignore Command e controle de deployments
+
+### Objetivo
+
+A estratégia atual busca evitar deployments do frontend quando as mudanças não impactam código executável, build, dependências ou configuração relevante do monorepo `frontend/`. Em resumo:
+
+- Mudanças relevantes em apps, pacotes compartilhados, lockfiles e configurações devem permitir deployment.
+- Mudanças apenas documentais, de agentes/IA ou fora de `frontend/` devem ser ignoradas.
+- Se documentação e código relevante mudarem juntos, o deployment deve acontecer.
+
+### Onde está configurado
+
+O controle usa `ignoreCommand` no próprio [vercel.json](../vercel.json), dentro de cada service:
+
+- `services.admin.ignoreCommand`
+- `services.proxy.ignoreCommand`
+- `services.web.ignoreCommand`
+
+No arquivo atual, não há `ignoreCommand` no nível raiz do `vercel.json`. **[Arquivo]**
+
+Comando configurado:
+
+```json
+"ignoreCommand": "bash ../../deploy/scripts/vercel-ignore-build.sh"
+```
+
+O script está em [deploy/scripts/vercel-ignore-build.sh](../deploy/scripts/vercel-ignore-build.sh).
+
+### Por que o `ignoreCommand` está em cada service
+
+No modelo atual com `services`, a configuração adotada foi declarar o mesmo `ignoreCommand` em `admin`, `proxy` e `web`, em vez de centralizar no nível raiz. A equipe registrou que isso evita ambiguidade de escopo entre múltiplos serviços no mesmo projeto. **[Relato]**
+
+Esse ponto não muda a arquitetura: os três serviços continuam no mesmo projeto/deployment da Vercel Services (não viram deployments independentes por causa disso).
+
+### Como o script decide (comportamento real)
+
+Com base em [deploy/scripts/vercel-ignore-build.sh](../deploy/scripts/vercel-ignore-build.sh):
+
+1. Resolve a raiz Git e lê `VERCEL_GIT_PREVIOUS_SHA` e `VERCEL_GIT_COMMIT_SHA` (ou `HEAD`).
+2. Se faltar histórico/commit válido, encerra com `exit 1` (comportamento conservador: **permite** deployment).
+3. Lista arquivos alterados no intervalo de commits com `git diff --name-only -z`.
+4. Analisa apenas caminhos `frontend/*`; tudo fora disso é ignorado para a decisão.
+5. Ignora mudanças documentais por extensão (`.md`, `.mdx`, `.rst`, `.adoc`, `.txt`).
+6. Ignora diretórios documentais/IA (por exemplo `docs`, `documentation`, `.github`, `.cursor`, `.claude`, `.codex`, `.windsurf`, `.opencode`, `.aider`, `agents`, `prompts`, `ai`, `.ai`).
+7. Ignora arquivos típicos de instrução/prompt de assistentes (`AGENTS.md`, `*.prompt*`, `*.instructions.md`, etc.).
+8. Considera relevantes arquivos de código, dependências, config e assets (ex.: `ts/tsx/js/jsx`, `json/yaml/toml/lock`, `css/scss`, imagens/fontes, `tsbuildinfo`, `Dockerfile`, `.dockerignore`, `.nvmrc`, `.env*`, entre outros padrões do script).
+9. Ao detectar ao menos um arquivo relevante em `frontend/`, permite deployment.
+
+Sobre tipos de mudança (adição, modificação, remoção, renomeação):
+
+- Adições/modificações/remoções entram na lista de paths do diff e são avaliadas normalmente.
+- O script usa `--no-renames`; portanto, renomeações são tratadas pela saída do diff sem detecção explícita de rename (efeito prático de avaliar os paths alterados). **[Inferência]**
+
+### Códigos de saída
+
+No Ignored Build Step da Vercel:
+
+| Código | Resultado |
+| ------ | --------- |
+| `0` | Ignora build/deployment |
+| `1` ou maior | Continua com build/deployment |
+
+No script atual, `exit 1` é usado tanto para mudanças relevantes quanto para falhas de determinação segura (fail-safe).
+
+### Limitações e cuidados
+
+- A decisão de skip é executada por service, mas o projeto continua com deployment conjunto em Vercel Services.
+- Mudança relevante em qualquer app ou pacote compartilhado deve permitir o deployment.
+- A lógica depende de histórico Git e das variáveis de commit fornecidas no ambiente de build.
+- Em dúvida/erro de detecção, a decisão é conservadora: não pular deployment.
+- Novos tipos de arquivo e configurações relevantes devem ser adicionados ao script quando o monorepo evoluir.
+
 ## Instalação e build do monorepo
 
 O workspace principal está em `frontend/`:
@@ -106,20 +178,17 @@ Nesse modelo, cada aplicação teria projeto, configurações e deployments inde
 
 Essa alternativa privilegia deploys e rollbacks independentes, mas requer coordenar as configurações e comunicação entre projetos. Não foi escolhida porque, para o Media Core, as três aplicações compõem uma solução integrada sob o mesmo domínio e tráfego centralizado pelo Proxy. Essa comparação não significa que projetos separados sejam inválidos ou inferiores em outros contextos.
 
+No cenário de três projetos separados, cada projeto poderia ter seu próprio `ignoreCommand` no `vercel.json` daquele projeto (nível raiz do projeto), com critérios diferentes por aplicação e ciclos independentes de deploy/rollback. Isso é uma possibilidade arquitetural futura; não representa a configuração atual.
+
 ## Referências oficiais
 
 **Vercel Services**
 
 - [Services](https://vercel.com/docs/services) — modelo, builds por serviço e estado Beta.
-- [The Complete Guide to Vercel Services](https://vercel.com/kb/guide/vercel-services) — configuração e exemplos.
 - [Services routing](https://vercel.com/docs/services/routing) — rewrites públicos para serviços.
-- [Service bindings](https://vercel.com/docs/services/bindings) — comunicação interna e variáveis geradas.
-- [Service configuration reference](https://vercel.com/docs/services/config-reference) — `root`, `framework` e `bindings`.
+- [Project settings](https://vercel.com/docs/project-configuration/project-settings) — Root Directory, framework e Ignored Build Step.
+- [How do I use the "Ignored Build Step" field on Vercel?](https://vercel.com/kb/guide/how-do-i-use-the-ignored-build-step-field-on-vercel) — semântica de `exit 0`/`exit 1` e uso de script.
 
 **Projetos e monorepos**
 
 - [Using Monorepos](https://vercel.com/docs/monorepos) — configurar projetos a partir de um repositório monorepo.
-- [Projects overview](https://vercel.com/docs/projects) — conceitos de projetos e deployments.
-- [Choosing how to structure your application on Vercel](https://vercel.com/kb/guide/structure-your-application) — comparação entre Services e projetos separados.
-- [Configuring a Build](https://vercel.com/docs/builds/configure-a-build) — Root Directory e Framework Preset.
-- [Deploying Git Repositories with Vercel](https://vercel.com/docs/git) — deployments automáticos por integração Git.
