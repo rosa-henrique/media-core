@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "bash deploy/scripts/vercel-ignore-build.sh",
   "services": {
     "admin": {
       "root": "apps/admin",
