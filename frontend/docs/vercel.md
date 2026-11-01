@@ -85,15 +85,14 @@ Com base em [deploy/scripts/vercel-ignore-build.sh](../deploy/scripts/vercel-ign
 3. Lista arquivos alterados no intervalo de commits com `git diff --name-only -z`.
 4. Analisa apenas caminhos `frontend/*`; tudo fora disso é ignorado para a decisão.
 5. Ignora mudanças documentais por extensão (`.md`, `.mdx`, `.rst`, `.adoc`, `.txt`).
-6. Ignora diretórios documentais/IA (por exemplo `docs`, `documentation`, `.github`, `.cursor`, `.claude`, `.codex`, `.windsurf`, `.opencode`, `.aider`, `agents`, `prompts`, `ai`, `.ai`).
-7. Ignora arquivos típicos de instrução/prompt de assistentes (`AGENTS.md`, `*.prompt*`, `*.instructions.md`, etc.).
-8. Considera relevantes arquivos de código, dependências, config e assets (ex.: `ts/tsx/js/jsx`, `json/yaml/toml/lock`, `css/scss`, imagens/fontes, `tsbuildinfo`, `Dockerfile`, `.dockerignore`, `.nvmrc`, `.env*`, entre outros padrões do script).
-9. Ao detectar ao menos um arquivo relevante em `frontend/`, permite deployment.
+6. Ignora arquivos sob diretórios documentais ou de IA em qualquer nível de `frontend/`: `docs/`, `documentation/`, `.cursor/`, `.claude/`, `.codex/`, `.windsurf/`, `.opencode/`, `.aider/`, `agents/`, `prompts/`, `ai/` e `.ai/`. `.github/` não está nessa lista e não é excluído pelo script.
+7. Ignora arquivos de instruções e prompts de IA reconhecidos pelo nome, sem diferenciar maiúsculas de minúsculas: `agents.md`, `agent.md`, `claude.md`, `gemini.md`, `copilot.md`, arquivos `*.prompt`, `*.prompt.*` e `*.instructions.md`.
+8. Qualquer outra alteração dentro de `frontend/` é considerada relevante por padrão e permite deployment. Isso inclui código das apps, pacotes compartilhados (inclusive pacotes novos), dependências, configurações, scripts, recursos, assets e arquivos com extensões não enumeradas individualmente. Se um commit misturar mudanças ignoráveis com pelo menos um caminho relevante, o deployment é permitido.
 
 Sobre tipos de mudança (adição, modificação, remoção, renomeação):
 
-- Adições/modificações/remoções entram na lista de paths do diff e são avaliadas normalmente.
-- O script usa `--no-renames`; portanto, renomeações são tratadas pela saída do diff sem detecção explícita de rename (efeito prático de avaliar os paths alterados). **[Inferência]**
+- O script pede os nomes de caminho com `git diff --no-renames --name-only -z`; as mudanças são avaliadas pelo caminho resultante, sem depender de uma lista fixa de extensões relevantes.
+- Uma renomeação é apresentada como remoção e adição de caminhos, e cada caminho é avaliado pelas mesmas regras. Assim, um destino novo relevante permite deployment mesmo quando a origem era ignorável.
 
 ### Códigos de saída
 
