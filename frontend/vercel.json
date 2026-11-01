@@ -1,0 +1,39 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "admin": {
+      "root": "apps/admin",
+      "framework": "nextjs"
+    },
+    "proxy": {
+      "root": "apps/proxy",
+      "framework": "nextjs",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "admin",
+          "format": "url",
+          "env": "ADMIN_ORIGIN"
+        },
+        {
+          "type": "service",
+          "service": "web",
+          "format": "url",
+          "env": "WEB_ORIGIN"
+        }
+      ]
+    },
+    "web": {
+      "root": "apps/web",
+      "framework": "nextjs"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "proxy"
+      }
+    }
+  ]
+}

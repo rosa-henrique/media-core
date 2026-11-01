@@ -1,7 +1,8 @@
-export function getProxyPublicOrigin(): string {
-  return (process.env.PROXY_PUBLIC_ORIGIN ?? "http://localhost:3002").replace(/\/$/, "");
-}
+import type { NextRequest } from "next/server";
 
+export function getProxyPublicOrigin(request: NextRequest): string {
+  return (process.env.PROXY_PUBLIC_ORIGIN ?? request.nextUrl.origin).replace(/\/$/, "");
+}
 export function getWebOrigin(): string {
   return (process.env.WEB_ORIGIN ?? "http://localhost:3000").replace(/\/$/, "");
 }

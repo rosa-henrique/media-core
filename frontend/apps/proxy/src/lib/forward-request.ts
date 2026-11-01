@@ -46,8 +46,12 @@ type Application = "web" | "admin";
  *
  * O pathname, a query string e o fragmento são preservados.
  */
-function rewriteRedirectLocation(location: string, application: Application): string {
-  const proxyOrigin = getProxyPublicOrigin();
+function rewriteRedirectLocation(
+  location: string,
+  application: Application,
+  request: NextRequest,
+): string {
+  const proxyOrigin = getProxyPublicOrigin(request);
 
   const internalOrigin = application === "web" ? getWebOrigin() : getAdminOrigin();
 
@@ -228,7 +232,7 @@ export async function forwardRequest(
     // Redirecionamentos internos devem continuar passando pelo proxy.
     // Redirecionamentos externos devem manter seu destino original.
     if (location && [301, 302, 303, 307, 308].includes(upstreamResponse.status)) {
-      responseHeaders.set("location", rewriteRedirectLocation(location, application));
+      responseHeaders.set("location", rewriteRedirectLocation(location, application, request));
     }
 
     // Remove cabeçalhos específicos da conexão do backend.
