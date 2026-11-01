@@ -1,14 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "bash deploy/scripts/vercel-ignore-build.sh",
   "services": {
     "admin": {
       "root": "apps/admin",
-      "framework": "nextjs"
+      "framework": "nextjs",
+      "ignoreCommand": "bash ../../deploy/scripts/vercel-ignore-build.sh"
     },
     "proxy": {
       "root": "apps/proxy",
       "framework": "nextjs",
+      "ignoreCommand": "bash ../../deploy/scripts/vercel-ignore-build.sh",
       "bindings": [
         {
           "type": "service",
@@ -26,7 +27,8 @@
     },
     "web": {
       "root": "apps/web",
-      "framework": "nextjs"
+      "framework": "nextjs",
+      "ignoreCommand": "bash ../../deploy/scripts/vercel-ignore-build.sh"
     }
   },
   "rewrites": [
