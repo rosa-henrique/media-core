@@ -52,6 +52,7 @@ while IFS= read -r -d "$(printf '\0')" file; do
   # Documentation and AI-related directories.
   case "/$lower_path/" in
     */docs/*|*/documentation/*|\
+    */.storybook/*|\
     */.cursor/*|*/.claude/*|*/.codex/*|\
     */.windsurf/*|*/.opencode/*|*/.aider/*|\
     */agents/*|*/prompts/*|*/ai/*|*/.ai/*)

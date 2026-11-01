@@ -26,7 +26,7 @@ O Media Core é uma plataforma de gerenciamento e administração de conteúdos 
 | `apps/web`     | Aplicação Next.js Web                                               | 3000  | `/web`     |
 | `apps/admin`   | Aplicação Next.js Admin                                             | 3001  | `/admin`   |
 | `apps/proxy`   | Gateway Next.js: encaminha `/web/*` e `/admin/*` por Route Handlers | 3002  | —          |
-| `packages/ui`  | `@frontend/ui`: `ThemeRegistry` (MUI), tema, `AppButton`            | —     | —          |
+| `packages/ui`  | `@frontend/ui`: MUI, tema, componentes e Storybook                   | —     | —          |
 | `packages/api` | `@frontend/api`: hoje só `getApiStatus()` de exemplo                | —     | —          |
 | `configs/`     | Base de ESLint e TypeScript compartilhada                           | —     | —          |
 
@@ -74,7 +74,7 @@ docker compose down
 | [docs/docker-compose.md](docs/docker-compose.md)               | Ambiente completo, operação por serviço, testes do proxy                                     |
 | [docs/vercel.md](docs/vercel.md)                               | Deploy do frontend com Vercel Services, configurações e alternativas arquiteturais             |
 | [docs/proxy.md](docs/proxy.md)                                 | Regras do proxy, erros, redirects, rotas de teste                                            |
-| [docs/commands-reference.md](docs/commands-reference.md)       | Comandos do monorepo/apps, Quality Gate e estado de validação                                |
+| [docs/commands-reference.md](docs/commands-reference.md)       | Comandos do monorepo/apps, Storybook, Quality Gate e estado de validação                     |
 | [docs/file-map.md](docs/file-map.md)                           | Para que serve cada arquivo de configuração                                                  |
 | [docs/decisions.md](docs/decisions.md)                         | Decisões com estado, evidência e motivo                                                      |
 | [docs/troubleshooting.md](docs/troubleshooting.md)             | Sintomas, causas e verificações                                                              |
@@ -88,5 +88,6 @@ docker compose down
 - **Achados registrados** (detalhes e limitações em [docs/status-and-next-steps.md](docs/status-and-next-steps.md#achados-registrados)): o Lerna foi descartado por decisão oficial; `proxy-redirect-test` não exercita a reescrita de `Location` em Docker/Compose; o `.env` da raiz só serve ao Compose; sobras do scaffold em `web`/`admin`; `@frontend/ui` incompleto; existem páginas `proxy-test` além das 4 rotas de teste.
 - **Deploy Vercel:** o histórico informado para esta etapa registra os três serviços ativos em Vercel Services; detalhes e limites de validação em [docs/vercel.md](docs/vercel.md). **[Relato]**
 - **Quality Gate:** builds invocados pelo Turbo dependem da verificação global de ESLint e Prettier; comandos e limites da integração Vercel pendente em [docs/commands-reference.md](docs/commands-reference.md) e [docs/vercel.md](docs/vercel.md).
+- **Storybook:** ambiente de desenvolvimento e documentação dos componentes de `@frontend/ui`; comandos, tema e avisos conhecidos em [docs/local-development.md](docs/local-development.md#storybook-da-biblioteca-ui).
 - **Docker:** as imagens executam o `server.js` do standalone; as apps não têm script `start`. Docker continua documentado como forma de execução própria em [docs/docker.md](docs/docker.md), não como único destino de produção.
 - **[Pendente]** Deploy do backend; autenticação/autorização (não implementadas); destino das rotas de teste; Kubernetes (etapa posterior).

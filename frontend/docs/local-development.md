@@ -119,6 +119,42 @@ pnpm build                       # confere o build real (Turbopack/Next) das app
 
 Novo pacote (**[Inferência]** a partir da estrutura atual; não foi executado): criar `packages/<nome>/` com `package.json` (`name: "@frontend/<nome>"`, `private: true`, `exports`/`types` apontando para `./src/index.ts`, scripts `lint`/`typecheck`), `tsconfig.json` estendendo `../../configs/typescript/base.json`, adicionar `"@frontend/<nome>": "workspace:*"` às apps consumidoras e à lista `transpilePackages`, e atualizar os `COPY` dos Dockerfiles se necessário (hoje copiam `packages/` inteiro).
 
+### Storybook da biblioteca UI
+
+O Storybook fica em `packages/ui` como ambiente de desenvolvimento, visualização e documentação dos componentes de `@frontend/ui`; não faz parte das aplicações `web`, `admin` ou `proxy`.
+
+Execute os comandos a partir da raiz `frontend`:
+
+```bash
+pnpm --filter @frontend/ui storybook
+pnpm --filter @frontend/ui build-storybook
+```
+
+`storybook` inicia o servidor de desenvolvimento na porta `6006` e permanece em execução até ser interrompido. `build-storybook` gera a versão estática em `packages/ui/storybook-static/` e encerra ao concluir. Ambos os comandos foram executados com sucesso, conforme informado para esta atualização; a execução não foi repetida durante a revisão desta documentação.
+
+As stories devem ficar junto ao componente em `packages/ui/src/components/<Componente>/` e usar os componentes reais da biblioteca. Novos componentes devem ter suas próprias stories; não adicionar exemplos com componentes fictícios. Para ver a configuração do tema e do `fn()` para callbacks, consulte [architecture.md](architecture.md#storybook-da-biblioteca-ui).
+
+No Story do `AppButton`, o callback é declarado como argumento da story:
+
+```tsx
+import { fn } from "storybook/test";
+
+args: {
+  children: "Clique aqui",
+  onClick: fn(),
+}
+```
+
+O build estático apresentou warnings Vite/Rolldown:
+
+```text
+[MODULE_LEVEL_DIRECTIVE]
+The semantics of the module level directive "use client"
+may not be preserved when bundling.
+```
+
+Eles vieram de módulos do MUI, incluindo `ToggleButtonGroupButtonContext.mjs`, mas não impediram o build: foram reportados `Vite built successfully` e `Storybook build completed successfully`. São avisos conhecidos; não há configuração adotada para suprimi-los.
+
 ## Verificações rápidas durante o desenvolvimento
 
 ```bash

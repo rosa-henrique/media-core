@@ -14,7 +14,7 @@ Os comandos exatos, com o estado de validação de cada um, estão nas seções 
 | **`web`**                           | `pnpm --filter web dev`            | `pnpm --filter web build`   | `pnpm --filter web lint` · `… typecheck`                       | `docker build -f apps/web/Dockerfile -t media-core-web:local .`     | `docker run -d -p 3000:3000 media-core-web:local`                                                                                          | `docker compose up -d --build web`                                 |
 | **`admin`**                         | `pnpm --filter admin dev`          | `pnpm --filter admin build` | `pnpm --filter admin lint` · `… typecheck`                     | `docker build -f apps/admin/Dockerfile -t media-core-admin:local .` | `docker run -d -p 3001:3001 media-core-admin:local`                                                                                        | `docker compose up -d --build admin`                               |
 | **`proxy`**                         | `pnpm --filter proxy dev`          | `pnpm --filter proxy build` | `pnpm --filter proxy lint` · `… typecheck`                     | `docker build -f apps/proxy/Dockerfile -t media-core-proxy:local .` | `docker run -d -p 3002:3002 -e WEB_ORIGIN=… -e ADMIN_ORIGIN=… -e PROXY_PUBLIC_ORIGIN=… media-core-proxy:local` (em rede com `web`/`admin`) | `docker compose up -d --build proxy` (sobe/espera `web` e `admin`) |
-| **`@frontend/ui`, `@frontend/api`** | — (compilados pela app que os usa) | — (sem build próprio)       | `pnpm --filter @frontend/ui lint` · `… typecheck` (idem `api`) | — (copiados nas imagens via `COPY packages/ packages/`)           | —                                                                                                                                        | —                                                                  |
+| **`@frontend/ui`, `@frontend/api`** | — (compilados pela app que os usa; UI também tem Storybook) | — (sem build próprio para as apps) | `pnpm --filter @frontend/ui lint` · `… typecheck` (idem `api`) | — (copiados nas imagens via `COPY packages/ packages/`) | — | — |
 
 **Execução de produção via Docker:** as imagens executam o `server.js` gerado por `output: "standalone"` (`node apps/<app>/server.js`). As apps **não têm** script `start`, portanto não há suporte a iniciar esse modo localmente com `pnpm start` ou `next start`. O deploy Vercel Services está descrito em [vercel.md](vercel.md); a configuração de execução Docker permanece em [docker.md](docker.md).
 
@@ -67,7 +67,18 @@ Em `turbo.json`, `//#quality:check` identifica a tarefa no package raiz. `cache:
 | `pnpm exec turbo run lint --filter=admin` | Lint de admin **e** suas dependências (`api`, `ui`) | [Testado] |
 | `pnpm -r exec <cmd>`                      | Executa `<cmd>` em cada projeto (ex.: `pwd`)        | [Testado] |
 
-Nomes de projeto: `web`, `admin`, `proxy`, `@frontend/ui`, `@frontend/api`. Pacotes **não** têm `dev`, `build` nem `start`; as apps têm `dev`, `build`, `lint` e `typecheck` (sem `start`).
+Nomes de projeto: `web`, `admin`, `proxy`, `@frontend/ui`, `@frontend/api`. Os pacotes não têm scripts convencionais `dev`, `build` ou `start`; `@frontend/ui` também tem comandos próprios do Storybook, descritos abaixo. As apps têm `dev`, `build`, `lint` e `typecheck` (sem `start`).
+
+## Storybook
+
+Os comandos abaixo devem ser executados da raiz `frontend`. O Storybook é da biblioteca `@frontend/ui`; não integra os builds das aplicações Next.js.
+
+| Comando | Efeito | Estado |
+| --- | --- | --- |
+| `pnpm --filter @frontend/ui storybook` | Inicia o servidor Storybook na porta `6006`; permanece ativo até interrupção manual. | [Relato] |
+| `pnpm --filter @frontend/ui build-storybook` | Gera a versão estática em `packages/ui/storybook-static/` e encerra ao concluir. | [Relato] |
+
+Os dois comandos foram reportados como executados e validados com sucesso. O build estático concluiu apesar dos warnings conhecidos de Vite/Rolldown `[MODULE_LEVEL_DIRECTIVE]` para `"use client"` em módulos do MUI. Consulte [local-development.md](local-development.md#storybook-da-biblioteca-ui) para a organização das stories e o contexto do tema compartilhado.
 
 ## Verificação HTTP (com os serviços de pé)
 

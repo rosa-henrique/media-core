@@ -11,6 +11,7 @@ Legenda das marcas: [README](../README.md#legenda-de-evidências). Validações 
 | Build                | `pnpm build` gera web, admin e proxy                                                                                                                                             | [Testado]   |
 | Quality Gate         | `quality:check` executa ESLint e Prettier `--check`; `//#quality:check` está sem cache e é dependência de `build` no Turbo. Execução e bloqueio de falhas após a mudança não foram revalidados nesta tarefa. | [Arquivo] / [A testar] |
 | Dev local            | `pnpm dev` (tudo) e `pnpm --filter web\|admin\|proxy dev` (cada um isolado); `/`, `/web`, `/admin` → 200; `@frontend/api` renderizado em `/web`                                  | [Testado]   |
+| Storybook da UI      | Scripts `storybook` e `build-storybook` em `@frontend/ui`; build estático reportado como concluído, com warnings de diretivas `"use client"` do MUI sem impedir o sucesso          | [Relato]    |
 | Execução via Docker  | Imagens usam standalone (`node apps/<app>/server.js`); as apps não têm script `start`. O deploy Vercel é registrado separadamente abaixo.                                         | [Testado]   |
 | Proxy                | Repasse de status e corpo; 500 repassado; redirect externo preservado; reescrita de `Location` interno (em dev); 502 e recuperação; 504 por timeout; 404 fora de `/web`/`/admin` | [Testado]   |
 | Imagens Docker       | As imagens anteriores (`frontend-{web,admin,proxy}:local`) foram construídas; as tags atuais são `media-core-{web,admin,proxy}:local`                                              | [Histórico] |
@@ -23,6 +24,7 @@ Legenda das marcas: [README](../README.md#legenda-de-evidências). Validações 
 
 - `pnpm format` e `pnpm exec eslint . --fix` (reescrevem arquivos), `cp .env.example .env` (não sobrescrevi o `.env` existente) e `nvm install 26.12.1`.
 - Execução de `pnpm quality:check`, a ordem/falha do Quality Gate no pipeline do Turbo após a alteração recente e integração desse pipeline nos builds Vercel de `web`, `admin` e `proxy`.
+- Os comandos do Storybook não foram reexecutados nesta atualização; o sucesso do servidor e do build estático foi informado para esta atualização. Warnings `[MODULE_LEVEL_DIRECTIVE]` do Vite/Rolldown durante o build são conhecidos e não tratados como falhas.
 - `docker build --no-cache`, `docker compose down --rmi local` e remoção de imagens (destrutivos para o cache/imagens).
 - `pnpm --filter <app> build` individual (só `pnpm build` via Turborepo foi executado) e `docker compose up -d --build admin|proxy` isolados (só `web`).
 - Timeout 504 **dentro** do Compose (testado com `pnpm --filter proxy dev`); WebSocket/HMR através do proxy; recarga automática (hot reload) ao editar um pacote compartilhado.

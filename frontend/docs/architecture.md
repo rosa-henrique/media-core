@@ -11,7 +11,7 @@ Legenda das marcas: [README](../README.md#legenda-de-evidências). Objetivos e m
 │   ├── admin/      # Next.js, porta 3001, basePath /admin
 │   └── proxy/      # Next.js, porta 3002, gateway por Route Handlers
 ├── packages/
-│   ├── ui/         # @frontend/ui  (MUI, tema, AppButton)
+│   ├── ui/         # @frontend/ui  (MUI, tema, componentes e Storybook)
 │   └── api/        # @frontend/api (getApiStatus de exemplo)
 ├── configs/
 │   ├── eslint/     # base.mjs e next.mjs, compartilhados
@@ -60,8 +60,19 @@ Como são consumidos:
 - A entrada pública `packages/ui/src/index.ts` reexporta `components` e `theme`; `components/index.ts` centraliza os componentes nomeados. Cada componente fica em seu diretório: `AppButton/AppButton.tsx` tem o `export default`; `AppButton/index.tsx` reexporta esse default e os tipos nomeados de `AppButton.types.ts`. **[Arquivo]**
 - O padrão adotado é importar componentes pelo pacote, por exemplo `import { AppButton } from "@frontend/ui";` em `apps/web/src/app/ButtonTest.tsx`, em vez de acoplar consumidores a caminhos internos. O barrel público centraliza a API, mantém imports consistentes e permite evoluir a implementação sem exigir mudanças nos consumidores. **[Arquivo]**
 - `packages/ui/package.json` também declara subpaths públicos (`./theme`, `./theme/*`, `./*`); o padrão recomendado para componentes compartilhados continua sendo o barrel `@frontend/ui`. Imports de arquivos internos como `@frontend/ui/src/...` não são expostos por `exports`. **[Arquivo]**
-- Os exports e componentes atuais são TypeScript em `src`; não há etapa de build própria do pacote. A organização real pode ser consultada em [file-map.md](file-map.md#pacotes). **[Arquivo]**
-- Os scripts dos pacotes são apenas `lint` e `typecheck`; não há `dev` nem `build` neles. **[Arquivo]**
+- Os exports e componentes atuais são TypeScript em `src`; não há etapa de build da biblioteca usada pelas aplicações. A organização real pode ser consultada em [file-map.md](file-map.md#pacotes). **[Arquivo]**
+
+### Storybook da biblioteca UI
+
+O Storybook pertence a `packages/ui` e serve como ambiente de desenvolvimento, visualização e documentação dos componentes compartilhados do design system. Não pertence às aplicações Next.js `web`, `admin` ou `proxy`, não é uma integração Next.js e não faz parte dos builds dessas aplicações.
+
+A configuração usa Storybook 10 (`storybook`, `@storybook/react-vite` e `@storybook/addon-docs`, `^10.6.5`) com Vite como bundler. As stories são descobertas em `packages/ui/src`, junto aos componentes; cada novo componente da biblioteca deve ter suas próprias stories. O componente atual, `AppButton`, tem stories `Default` e `Disabled`; não são criados componentes fictícios para preencher o catálogo. A configuração principal está em `packages/ui/.storybook/main.ts`.
+
+O preview reaproveita o tema real de MUI importando `theme` diretamente de `../src/theme/theme`, e aplica `ThemeProvider` e `CssBaseline`. Não importa pelo barrel `../src/theme` nem usa `ThemeRegistry`, pois esse componente inclui `AppRouterCacheProvider`, integração específica do Next.js. Essa separação mantém o Storybook independente do framework das aplicações.
+
+Para callbacks e interações, as stories usam `fn()` de `storybook/test`; as chamadas podem ser observadas no painel Actions sem instalar `@storybook/addon-actions`. A configuração adotada não usa Playwright/Chromium, recursos de IA ou MCP.
+
+Comandos, diretório de saída e avisos conhecidos do build estão em [local-development.md](local-development.md#storybook-da-biblioteca-ui) e [commands-reference.md](commands-reference.md#storybook).
 
 ## Dependências entre projetos
 
@@ -76,7 +87,7 @@ flowchart TD
 ```
 
 - `proxy` não importa código de `web`/`admin`; fala com elas por HTTP, usando `WEB_ORIGIN` e `ADMIN_ORIGIN`. **[Arquivo]**
-- Em `turbo.json`, `build`, `lint` e `typecheck` dependem das tarefas correspondentes dos pacotes do workspace. `build` também depende da tarefa global `//#quality:check`, que verifica ESLint e Prettier antes dos builds dependentes. A configuração existe nos arquivos; consulte [commands-reference.md](commands-reference.md#scripts-do-monorepo-raiz) para os comandos e [vercel.md](vercel.md) para a integração Vercel ainda pendente de validação. **[Arquivo]**
+- Em `turbo.json`, `build`, `lint` e `typecheck` dependem das tarefas correspondentes dos pacotes do workspace. `build` também depende da tarefa global `//#quality:check`, que verifica ESLint e Prettier antes dos builds dependentes. O Storybook é executado diretamente pelos scripts do pacote UI, não é uma tarefa do build das aplicações Next.js. Consulte [commands-reference.md](commands-reference.md#scripts-do-monorepo-raiz) para os comandos do monorepo e [commands-reference.md](commands-reference.md#storybook) para o Storybook. A integração Vercel com o Quality Gate ainda está pendente de validação. **[Arquivo]**
 - Efeito observado anteriormente: `turbo run lint --filter=admin` executou 3 tarefas (admin, `@frontend/api`, `@frontend/ui`). **[Testado]**
 
 ## Fluxo de uma requisição pelo proxy
