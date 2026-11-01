@@ -11,12 +11,25 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 1
 PREVIOUS_SHA="${VERCEL_GIT_PREVIOUS_SHA:-}"
 CURRENT_SHA="${VERCEL_GIT_COMMIT_SHA:-HEAD}"
 
+echo "========== VERCEL IGNORE DEBUG =========="
+echo "PWD: $(pwd)"
+echo "REPO_ROOT: ${REPO_ROOT:-EMPTY}"
+echo "CURRENT_SHA: ${CURRENT_SHA:-EMPTY}"
+echo "PREVIOUS_SHA: ${PREVIOUS_SHA:-EMPTY}"
+echo "SHALLOW: $(git rev-parse --is-shallow-repository 2>&1)"
+echo "========================================="
+
 if [[ -z "$PREVIOUS_SHA" ]]; then
   exit 1
 fi
 
 git cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null || exit 1
 git cat-file -e "${CURRENT_SHA}^{commit}" 2>/dev/null || exit 1
+
+echo "========== COMMIT VALIDATION ============"
+git cat-file -t "$PREVIOUS_SHA" 2>&1 || true
+git cat-file -t "$CURRENT_SHA" 2>&1 || true
+echo "========================================="
 
 CHANGED_FILES="$(mktemp)"
 trap 'rm -f "$CHANGED_FILES"' EXIT
@@ -28,6 +41,15 @@ git -C "$REPO_ROOT" diff \
   "$PREVIOUS_SHA" \
   "$CURRENT_SHA" \
   -- > "$CHANGED_FILES" || exit 1
+
+echo "========== CHANGED FILES ================"
+git -C "$REPO_ROOT" diff \
+  --no-renames \
+  --name-status \
+  "$PREVIOUS_SHA" \
+  "$CURRENT_SHA" || true
+
+echo "========================================="
 
 has_relevant_changes=false
 
