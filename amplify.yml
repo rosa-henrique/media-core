@@ -6,17 +6,18 @@ applications:
       phases:
         preBuild:
           commands:
+            - echo "PWD:"
+            - pwd
+            - echo "CODEBUILD_SRC_DIR:"
+            - echo "$CODEBUILD_SRC_DIR"
+            - echo "Conteudo da raiz:"
+            - ls -la
+            - echo "Localizacao do workspace:"
+            - find . -maxdepth 4 -name pnpm-workspace.yaml
+            - echo "Instalando pnpm:"
             - npm install -g pnpm@12.15.0
             - pnpm --version
-            - cd "$CODEBUILD_SRC_DIR/frontend" && pnpm install --frozen-lockfile
-        build:
-          commands:
-            - cd "$CODEBUILD_SRC_DIR/frontend" && pnpm exec turbo run build --filter=web...
       artifacts:
         baseDirectory: frontend/apps/web/.next
         files:
-          - '**/*'
-      cache:
-        paths:
-          - frontend/node_modules/**/*
-          - frontend/apps/web/.next/cache/**/*
+          - "**/*"
