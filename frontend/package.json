@@ -26,5 +26,8 @@
     "typecheck": "turbo run typecheck",
     "build": "turbo run build",
     "quality:check": "pnpm exec eslint . && pnpm exec prettier . --check"
+  },
+  "dependencies": {
+    "next": "16.4.3"
   }
 }

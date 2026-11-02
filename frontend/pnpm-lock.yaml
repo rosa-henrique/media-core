@@ -165,6 +165,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      next:
+        specifier: 16.4.3
+        version: 16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.43)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: 8.72.0
