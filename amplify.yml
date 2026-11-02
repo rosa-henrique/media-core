@@ -1,0 +1,23 @@
+version: 1
+applications:
+  - appRoot: frontend/apps/web
+    frontend:
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - npm install -g pnpm@12.15.0
+            - cd frontend
+            - pnpm install --frozen-lockfile
+        build:
+          commands:
+            - cd frontend
+            - pnpm turbo run build --filter=web...
+      artifacts:
+        baseDirectory: frontend/apps/web/.next
+        files:
+          - "**/*"
+      cache:
+        paths:
+          - frontend/node_modules/**/*
+          - frontend/apps/web/.next/cache/**/*
