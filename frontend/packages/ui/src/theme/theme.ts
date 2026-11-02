@@ -1,11 +1,14 @@
 import { createTheme } from "@mui/material/styles";
 
-import { palette } from "./palette";
+import { colorSchemes } from "./palette";
 import { tokens } from "./tokens";
 import { typography } from "./typography";
 
 export const theme = createTheme({
-  palette,
+  colorSchemes,
+  cssVariables: {
+    colorSchemeSelector: "class",
+  },
   typography,
   spacing: tokens.spacing.sm,
   shape: {

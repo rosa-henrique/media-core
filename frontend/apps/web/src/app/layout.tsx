@@ -1,5 +1,7 @@
 import { Roboto } from "next/font/google";
 
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
+
 import { ThemeRegistry } from "@frontend/ui";
 
 import type { Metadata } from "next";
@@ -24,8 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={roboto.variable}>
+    <html lang="pt-BR" className={roboto.variable} suppressHydrationWarning>
       <body>
+        <InitColorSchemeScript defaultMode="system" attribute="class" />
         <ThemeRegistry>{children}</ThemeRegistry>
       </body>
     </html>

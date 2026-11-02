@@ -16,6 +16,7 @@ const baseConfig = defineConfig([
     "**/dist/**",
     "**/next-env.d.ts",
     "pnpm-lock.yaml",
+    "**/storybook-static/**",
   ]),
 
   {

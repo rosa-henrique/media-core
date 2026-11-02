@@ -7,7 +7,7 @@ import { theme } from "../src/theme/theme";
 const preview = {
   decorators: [
     (Story: ComponentType) => (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={theme} defaultMode="system">
         <CssBaseline />
         <Story />
       </ThemeProvider>

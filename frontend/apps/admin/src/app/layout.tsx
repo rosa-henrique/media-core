@@ -1,10 +1,13 @@
 import { Roboto } from "next/font/google";
 
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
+
 import { ThemeRegistry } from "@frontend/ui";
 
 import type { Metadata } from "next";
 
 import "./globals.css";
+import AdminLayout from "@/layout/AdminLayout";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -24,9 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={roboto.variable}>
+    <html lang="pt-BR" className={roboto.variable} suppressHydrationWarning>
       <body>
-        <ThemeRegistry>{children}</ThemeRegistry>
+        <InitColorSchemeScript defaultMode="system" attribute="class" />
+
+        <ThemeRegistry>
+          <AdminLayout>{children}</AdminLayout>
+        </ThemeRegistry>
       </body>
     </html>
   );

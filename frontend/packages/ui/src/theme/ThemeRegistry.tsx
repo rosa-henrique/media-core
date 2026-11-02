@@ -1,7 +1,7 @@
 "use client";
 
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 
 import type { ReactNode } from "react";
 
@@ -14,7 +14,7 @@ type ThemeRegistryProps = {
 export function ThemeRegistry({ children }: ThemeRegistryProps) {
   return (
     <AppRouterCacheProvider>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={theme} defaultMode="system" disableTransitionOnChange>
         <CssBaseline />
         {children}
       </ThemeProvider>
