@@ -11,7 +11,7 @@ applications:
             - cd "$PWD/frontend" && pnpm install --frozen-lockfile
         build:
           commands:
-            - cd "$PWD/frontend" && pnpm exec turbo run build --filter=web...
+            - pnpm exec turbo run build --filter=web...
       artifacts:
         baseDirectory: frontend/apps/web/.next
         files:
