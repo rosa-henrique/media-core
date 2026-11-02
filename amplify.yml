@@ -12,14 +12,18 @@ applications:
         build:
           commands:
             - pnpm exec turbo run build --filter=web...
+            - echo "=== DIRETORIO ATUAL ==="
+            - pwd
             - echo "=== NEXT NA RAIZ DO WORKSPACE ==="
-            - ls -la frontend/node_modules/next
+            - test -d node_modules/next && echo "EXISTE" || echo "NAO EXISTE"
             - echo "=== NEXT NA APLICACAO ==="
-            - ls -la frontend/apps/web/node_modules/next
+            - test -d apps/web/node_modules/next && echo "EXISTE" || echo "NAO EXISTE"
             - echo "=== NEXT NO STANDALONE ==="
-            - ls -la frontend/apps/web/.next/standalone/node_modules/next
-            - echo "=== CONFIGURACAO PNPM ==="
-            - cd frontend && pnpm config get node-linker
+            - test -d apps/web/.next/standalone/node_modules/next && echo "EXISTE" || echo "NAO EXISTE"
+            - echo "=== PACOTE NEXT NO WORKSPACE ==="
+            - pnpm why next --filter web
+            - echo "=== NODE LINKER ==="
+            - pnpm config get node-linker
       artifacts:
         baseDirectory: frontend/apps/web/.next
         files:
