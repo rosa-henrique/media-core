@@ -39,3 +39,5 @@ coverage/
 # Storybook
 **/storybook-static/
 **/debug-storybook.log
+
+**/tsconfig.tsbuildinfo
