@@ -12,6 +12,14 @@ applications:
         build:
           commands:
             - pnpm exec turbo run build --filter=web...
+            - echo "=== NEXT NA RAIZ DO WORKSPACE ==="
+            - ls -la frontend/node_modules/next
+            - echo "=== NEXT NA APLICACAO ==="
+            - ls -la frontend/apps/web/node_modules/next
+            - echo "=== NEXT NO STANDALONE ==="
+            - ls -la frontend/apps/web/.next/standalone/node_modules/next
+            - echo "=== CONFIGURACAO PNPM ==="
+            - cd frontend && pnpm config get node-linker
       artifacts:
         baseDirectory: frontend/apps/web/.next
         files:
