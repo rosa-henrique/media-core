@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@frontend/ui", "@frontend/api"],
 
   // Gera uma saída de produção independente para execução em contêiner.
-  output: "standalone",
+  ...(process.env.NEXT_OUTPUT_STANDALONE === "true" && {
+    output: "standalone",
+  }),
 
   // Permite rastrear dependências compartilhadas na raiz do monorepo.
   // Este comando considera que o Next.js é executado a partir de apps/web.

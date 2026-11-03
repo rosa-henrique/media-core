@@ -24,6 +24,10 @@ applications:
             - pnpm why next --filter web
             - echo "=== NODE LINKER ==="
             - pnpm config get node-linker
+            - echo "=== DIRETORIO ANTES DO BUILD ==="
+            - pwd
+            - echo "=== ARQUIVOS ==="
+            - ls -la
       artifacts:
         baseDirectory: frontend/apps/web/.next
         files:
