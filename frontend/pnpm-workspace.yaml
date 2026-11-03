@@ -5,4 +5,3 @@ allowBuilds:
   sharp: false
   unrs-resolver: true
   esbuild: true
-nodeLinker: hoisted
