@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../MediaCore.Contracts/MediaCore.Contracts.csproj" />
+    <ProjectReference Include="../MediaCore.Domain/MediaCore.Domain.csproj" />
+  </ItemGroup>
+</Project>

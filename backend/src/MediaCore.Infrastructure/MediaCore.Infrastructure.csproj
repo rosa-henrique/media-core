@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Aspire.ClickHouse.Driver" />
+    <PackageReference Include="ClickHouse.Driver" />
+    <PackageReference Include="Confluent.Kafka" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <ProjectReference Include="../MediaCore.Application/MediaCore.Application.csproj" />
+    <ProjectReference Include="../MediaCore.Contracts/MediaCore.Contracts.csproj" />
+    <ProjectReference Include="../MediaCore.Domain/MediaCore.Domain.csproj" />
+  </ItemGroup>
+</Project>

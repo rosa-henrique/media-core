@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <ItemGroup>
+    <PackageReference Include="Aspire.Seq" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <ProjectReference Include="../MediaCore.Application/MediaCore.Application.csproj" />
+    <ProjectReference Include="../MediaCore.Infrastructure/MediaCore.Infrastructure.csproj" />
+    <ProjectReference Include="../MediaCore.ServiceDefaults/MediaCore.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

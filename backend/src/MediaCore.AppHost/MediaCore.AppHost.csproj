@@ -1,0 +1,18 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.4">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.ClickHouse" />
+    <PackageReference Include="Aspire.Hosting.Kafka" />
+    <PackageReference Include="Aspire.Hosting.Seq" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" />
+    <ProjectReference Include="../MediaCore.Admin.Api/MediaCore.Admin.Api.csproj" />
+    <ProjectReference Include="../MediaCore.Content.Api/MediaCore.Content.Api.csproj" />
+    <ProjectReference Include="../MediaCore.Worker/MediaCore.Worker.csproj" />
+  </ItemGroup>
+</Project>

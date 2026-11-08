@@ -1,0 +1,6 @@
+@MediaCore.Admin.Api_HostAddress = http://localhost:5155
+
+GET {{MediaCore.Admin.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
